@@ -1,6 +1,3 @@
-docs/build/
-docs/source/
-dcos/make.bat
-docs/Makefile
 .idea/
-stereocell/segmentation/weights/
+cellbin/weights/
+cellbin/iqc/trackCross_net/sold2/ckpt/
