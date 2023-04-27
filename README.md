@@ -38,6 +38,15 @@ os.environ['PATH'] = vipshome + ';' + os.environ['PATH']
 ```text
 $ conda install --channel conda-forge pyvips
 ```
+* Download & setup CNN weights file<br>
+
+| weights                 | dst dir                               |
+|-------------------------|---------------------------------------|
+| [sold2_wireframe.tar](https://pan.genomics.cn/ucdisk/s/naMzYr) | cellbin\iqc\trackCross_net\sold2\ckpt |
+| [stereocell_bcdu_cell_256x256_220926.pth](https://pan.genomics.cn/ucdisk/s/mU3umq)                    | cellbin\weights                       |
+| [stereocell_bcdu_tissue_512x512_220822.onnx](https://pan.genomics.cn/ucdisk/s/bQVbYv)                    | cellbin\weights                       |
+
+
 ## Tutorials
 
 ### Test Data
