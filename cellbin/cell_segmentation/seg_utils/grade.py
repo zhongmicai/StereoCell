@@ -11,8 +11,8 @@ from skimage.morphology import remove_small_holes
 warnings.filterwarnings('ignore')
 
 
-# statistic cell property
 def grade_stat(props, output_path):
+    """statistic cell property"""
     stat = []
     for idx, obj in enumerate(props):
         prop = {}
@@ -27,8 +27,8 @@ def grade_stat(props, output_path):
     f.close()
 
 
-# calc per cell score
 def score_cell(obj):
+    """ calc per cell score """
     AREA_THRE = 150
     INTENSITY_THRE = 150
     SHAPE_THRE = 0.6
@@ -57,8 +57,8 @@ def score_cell(obj):
     return total_score
 
 
-# score and watershed
 def water_score(input_list):
+    """ score and watershed """
 
     mask, image = input_list
     label = measure.label(mask, connectivity=2)
@@ -101,6 +101,7 @@ def water_score(input_list):
             color_mask_ori[bbox[0]: bbox[2], bbox[1]: bbox[3]] += color_mask_temp
     post_mask = np.where(post_mask != 0, 1, 0).astype(np.uint8)
     color_mask_ori = np.array(np.rint(color_mask_ori), dtype=np.uint8)
+
     return [post_mask, color_mask_ori]
 
 
@@ -135,7 +136,6 @@ def score_multi(input_list, processes):
 
 
 def edgeSmooth(img):
-
     # remove small objects
     img_filter = remove_small(img)
     # hole fill

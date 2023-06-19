@@ -55,7 +55,7 @@ The purpose of open-sourcing this data set is to promote the research of spatial
 sciences through algorithms. STOmics reserves the right to interpret it.
 
 ### Command Line
-It supports stitching, tissue segmentation, cell segmentation and Cell labeling, also supports whole pipeline analysis of StereoCell.
+It supports [stitching, registration, tissue segmentation, cell segmentation and Cell labeling](docs/modules.md), also supports whole pipeline analysis of StereoCell.
 in pipeline analysis, arguments are described as follows:
 
 *  ```--input```  Image data produced by microscopy. 
@@ -72,31 +72,8 @@ python .\pipeline.py \
 --matrix D:\data\test\SS200000135TL_D1.gem.gz  \
 --output D:\data\test
 --chipno SS200000135TL_D1
-
-# Stitching
-python .\stitching.py \
---input D:\data\test\SS200000135TL_D1\SS200000135TL_D1
---output D:\data\test\stitched.tif
-
-# Tissue segmentation
-python .\segmentation.py \
---type tissue
---input D:\StereoCell\data\image_6467_16800_512_512.tif \
---output D:\StereoCell\data\image_tissue.tif \
-
-# Cell segmentation
-python .\segmentation.py \
---type cell
---input D:\StereoCell\data\image_6467_16800_512_512.tif \
---output D:\StereoCell\data\image_cell.tif \
-
-# Cell labeling
-python labeling.py \
---mask_path D:\StereoCell\data\cell_mask.tif \
---gem_path D:\StereoCell\data\gene.gem.gz \
---out_path D:\StereoCell\data
 ```
-[More details](docs/details.md)
+[More about output](docs/details.md)
 
 ### GUI
 For some low-quality input data, using the StereoCell pipeline will get wrong results. We have developed a manual tool 
@@ -114,7 +91,7 @@ The Mainwindow is shown in the figure below,
 StereoCell is released under the MIT license. Please cite StereoCell in your publications if it helps your research: <br>
 ```text
 @article {Li2023.02.28.530414,
-	author = {Li, Mei and Liu, Huanlin and Li, Min and Fang, Shuangsang and Kang, Qiang and Zhang, Jiajun},
+	author = {Li, Mei and Liu, Huanlin and Li, Min and Fang, Shuangsang and Kang, Qiang},
 	title = {StereoCell enables high accuracy single cell segmentation for spatial transcriptomic dataset},
 	year = {2023},
 	URL = {https://www.biorxiv.org/content/early/2023/03/01/2023.02.28.530414},

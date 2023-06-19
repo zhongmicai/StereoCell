@@ -13,8 +13,15 @@ import tifffile
 
 
 class CellInfer(object):
+    """ Cell segmentation """
 
     def __init__(self, file, batch_size):
+        """ Initialize Cell segmentation.
+
+        Args:
+            file: Stain image
+            batch_size: batch size used during inference
+        """
         self.file = file
         self.batch_size = batch_size
 
@@ -35,7 +42,12 @@ class CellInfer(object):
         return list_trfms
 
     def run_infer(self):
-        # split -> predict -> merge
+        """
+        Complete the generation of cell segmentation results through preprocessing,
+        splitting large images, reasoning, and sub-block merging
+
+        Returns: cell mask
+        """
         if isinstance(self.file, list):
             file_list = self.file
         else:

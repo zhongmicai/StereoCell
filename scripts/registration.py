@@ -11,8 +11,6 @@ from cellbin.utils.util import search_files
 from cellbin.stitching import Stitcher
 from cellbin.registration import Registration
 from cellbin.registration.gene_info import GeneInfo
-from cellbin.tissue_segmentation import tissue_cut
-from cellbin.cell_segmentation.segment import cell_seg
 import tifffile
 import argparse
 
@@ -38,8 +36,8 @@ def image_map(images):
     return dct
 
 
-class Pipeline(object):
-    """ Pipeline of StereoCell"""
+class Regist(object):
+    """ Registration module """
 
     def __init__(self):
         """Initialize StereoCell pipeline.
@@ -70,7 +68,6 @@ class Pipeline(object):
     def set_stereo_chip(self, c): self._stereo_chip = c
 
     def _image_qc(self, ):
-        """ ImageQC that generate anchor points for registration """
         glog.info('Anchor point positioning for subsequent registration process')
         cmd = '{} {} -i {} -o {} -c {} -n {} -e {}'.format(
             sys.executable, '../cellbin/iqc/qc_util.py',
@@ -89,7 +86,6 @@ class Pipeline(object):
         else: return None
 
     def _stitching(self, ):
-        """ Generate Whole Slide Image for FOVs image """
         glog.info('Whole Slide Stitching to generate Mosaic image')
         tiles = search_files(os.path.join(self._image_path, self._stereo_chip), ['.tif'])
         imap = image_map(tiles)
@@ -120,7 +116,6 @@ class Pipeline(object):
         self._scale_x, self._scale_y, self._rotation = _
 
     def _registration(self, ):
-        """ Align gene matrix with stain image in single cell precision """
         glog.info('Registration, (Fixed: Gene matrix), (Moving: Image)')
 
         if self._matrix_1bin() is not None:
@@ -141,59 +136,22 @@ class Pipeline(object):
         r.transform_to_regist()
         tifffile.imwrite(os.path.join(self._output_path, 'registration.tif'), r.regist_img)
 
-    def _tissue_cut(self, ):
-        """ Get Tissue Boundary Information in stain image """
-        image_path = os.path.join(self._output_path, 'registration.tif')
-        tissue_cut(image_path, output=os.path.join(self._output_path, 'registration_tissue_segmentation.tif'))
-
-    def _cell_cut(self, ):
-        """ Get Cell Boundary Information in stain image """
-        image_path = os.path.join(self._output_path, 'registration.tif')
-        cell_seg(image_path, self._output_path, flag=1)
-
-    def _labeling(self, ):
-        """ Expanding cell boundaries to capture greater numbers of genes within a single cell """
-        # from cellbin.cell_labeling.GMMCorrectForv03 import CellCorrection
-        # from multiprocessing import cpu_count
-        #
-        # mask_file = os.path.join(self._output_path, 'registration_cell_segmentation.tif')
-        # gem_file = self._gene_matrix
-        # out_path = self._output_path
-        # threshold = 20
-        # process = min(cpu_count() // 2, 3)
-        # cc = CellCorrection(mask_file, gem_file, out_path, threshold, process)
-        # cc.cell_correct()
-        mask_file = os.path.join(self._output_path, 'registration_tissue_segmentation.tif')
-        glog.info('Generate stereo-seq filter matrix')
-        cmd = '{} {} -g {} -t {} -o {}'.format(
-            sys.executable, './tissue_bin.py',
-            self._gene_matrix, mask_file, self._output_path)
-        print(cmd)
-        os.system(cmd)
-
     def run(self, image: str, output: str, stereo_chip: str, gem=None):
-        """ Pipeline of StereoCell """
+        """ Module of Registration """
         self._image_path = image
         self._output_path = output
         self._stereo_chip = stereo_chip
         self._gene_matrix = gem
-        glog.info('Start RUN StereoCell analysis pipeline')
+        glog.info('Start RUN StereoCell registration')
         self._image_qc()
         self._stitching()
         if gem is None: glog.warn('Miss gene matrix, will finished the pipeline')
         self._gene_matrix = gem
         self._registration()
-        self._tissue_cut()
-        self._cell_cut()
-        self._labeling()
 
 
 """ Usage
-python .\pipeline.py \
---input D:\data\test\SS200000135TL_D1 \
---output D:\data\test\paper \
---matrix D:\data\test\SS200000135TL_D1.gem.gz \
---chipno SS200000135TL_D1
+python .\registration.py --input D:\data\test\SS200000135TL_D1 --output D:\data\test\paper --matrix D:\data\test\SS200000135TL_D1.gem.gz --chipno SS200000135TL_D1
 """
 
 
@@ -213,12 +171,12 @@ def main(args, para):
     chip_no = args.chipno
     gem_file = args.matrix
 
-    p = Pipeline()
+    p = Regist()
     p.run(image=input, output=output, stereo_chip=chip_no, gem=gem_file)
 
 
 if __name__ == '__main__':
-    usage="""Stitching (StereoCell)"""
+    usage="""Registration (StereoCell)"""
     PROG_VERSION='v0.0.1'
 
     parser = argparse.ArgumentParser(usage=usage)

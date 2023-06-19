@@ -46,6 +46,7 @@ def cell_seg(img_path, out_path, flag=1, DEEP_CROP_SIZE=20000, OVERLAP = 100):
 
 
 def segment_entry(args, verbose=''):
+    """ Config cell segmentation & inference """
     args = vars(args)
     img_path = args['img_path']
     out_path = args['out_path']

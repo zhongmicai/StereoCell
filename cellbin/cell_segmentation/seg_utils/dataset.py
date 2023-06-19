@@ -1,7 +1,3 @@
-import os
-from skimage import io
-import cv2
-import torch
 from torch.utils.data import Dataset
 from albumentations import (HorizontalFlip, Normalize, Compose, GaussNoise)
 from albumentations.pytorch import ToTensorV2
@@ -28,7 +24,7 @@ def get_transforms():
 
 
 class data_batch(Dataset):
-
+    """Data batch """
     def __init__(self, img_list):
         self.transforms = get_transforms()
         self.img_list = img_list

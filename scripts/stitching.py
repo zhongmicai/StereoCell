@@ -8,6 +8,12 @@ from cellbin.stitching import Stitcher
 
 
 def image_map(images):
+    """
+    Args:
+        images: List of images
+    Returns: dict -> Used to describe the number of row and column indexes that
+            each file belongs to in the scanning space
+    """
     dct = dict()
     for i in images:
         file_name = os.path.split(i)[-1]

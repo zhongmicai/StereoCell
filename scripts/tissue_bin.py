@@ -11,12 +11,14 @@ import numpy as np
 import tifffile as tiff
 
 
-def Load_Gxp_Bin(geneExpFile): # load gem file
+def Load_Gxp_Bin(geneExpFile):
+    """ load gem file """
     gem = pd.read_csv(geneExpFile, sep="\t", quoting=3, comment="#")
     return gem
 
 
-def Load_TissueCut(tcImaFile): # Load tissue cut image
+def Load_TissueCut(tcImaFile):
+    """ Load tissue cut image """
     tci = tiff.imread(tcImaFile)
     return tci
 

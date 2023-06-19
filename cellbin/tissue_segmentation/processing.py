@@ -22,7 +22,6 @@ def f_post_process(pred):
 
 
 from cellbin.tissue_segmentation.tools.threshold import f_th_li
-from skimage.exposure import rescale_intensity
 
 
 def f_tissue_preprocess(img, tar_size=(256, 256)):

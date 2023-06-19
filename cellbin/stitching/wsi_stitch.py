@@ -4,7 +4,23 @@ from cellbin import Image
 
 
 class StitchingWSI(object):
+    """ Stitching WSI """
     def __init__(self):
+
+        """Initialize Stitching WSI.
+
+        Args:
+          fov_rows: The number of FOV scans in the Y direction
+          fov_cols: The number of FOV scans in the X direction
+          fov_height: Height of FOV image.
+          fov_width: Width of FOV image.
+          fov_channel: The image channel count of mosaic image.
+          fov_dtype: Dtype of pixel.
+          fov_location: Each FOV space coordinate matrix..
+          buffer: Anchor Image of stitching
+          mosaic_height: Height of mosaic image
+          mosaic_width: Width of mosaic image
+        """
         self.fov_rows = None
         self.fov_cols = None
         self.fov_height = self.fov_width = 0
@@ -47,6 +63,7 @@ class StitchingWSI(object):
         self.mosaic_width, self.mosaic_height = [x1 + self.fov_width, y1 + self.fov_height]
 
     def mosaic(self, src_image: dict, loc=None, downsample=1, multi=False):
+        """ Stitching image for FOVs """
         rc = np.array([k.split('_') for k in list(src_image.keys())], dtype=int)
 
         self.fov_rows, self.fov_cols = loc.shape[:2]

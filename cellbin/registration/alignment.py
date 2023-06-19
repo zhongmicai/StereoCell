@@ -2,6 +2,7 @@ from scipy.spatial.distance import cdist
 
 
 def rotate(ptx, pty, angle, original_shape, new_shape):
+    """ Rotate the track point """
     px, py = ptx, pty
     ori_h, ori_w = original_shape
     new_h, new_w = new_shape
@@ -50,6 +51,7 @@ def f_padding(img, top, bot, left, right, mode='constant', value=0):
 
 
 class AlignByTrack:
+    """ Align By Track """
     def __init__(self):
         self.search_angle_set = (0, 90, 180, 270)
         self.search_range_x = [-2, -1, 0, 1, 2]

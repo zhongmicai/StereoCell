@@ -23,8 +23,7 @@ def up_conv(in_channels, out_channels):
 
 
 class SResUnet(nn.Module):
-    """Shallow Unet with ResNet18 or ResNet34 encoder.
-    """
+    """Shallow Unet with ResNet18 or ResNet34 encoder."""
 
     def __init__(self, *, Encoder='resnet18', pretrained=True, out_channels=3):
         super().__init__()
@@ -107,8 +106,7 @@ class SResUnet(nn.Module):
 
 
 class DResUnet(nn.Module):
-    """Deep Unet with ResNet50, ResNet101 or ResNet152 encoder.
-    """
+    """Deep Unet with ResNet50, ResNet101 or ResNet152 encoder."""
 
     def __init__(self, *, Encoder='resnet50', pretrained=False, out_channels=2):
         super().__init__()
@@ -181,8 +179,7 @@ class DResUnet(nn.Module):
 
 
 class EpsaResUnet(nn.Module):
-    """Deep Unet with ResNet50, ResNet101 or ResNet152 encoder.
-    """
+    """Deep Unet with ResNet50, ResNet101 or ResNet152 encoder."""
 
     def __init__(self, *, Encoder='epsanet18', pretrained=False, out_channels=6):
         super().__init__()

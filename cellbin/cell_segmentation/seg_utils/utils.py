@@ -519,9 +519,7 @@ def split(image, cut_size, overlap=100):
             x_end = min(x_begin + cut_size, shapes[0])
             y_end = min(y_begin + cut_size, shapes[1])
             i = image[x_begin: x_end, y_begin: y_end]
-            # if i.shape[0] < 255 or i.shape[1] < 255:
-            #     continue
-            # tifffile.imsave(os.path.join(outpath, file + '_' + str(shapes[0]) + '_' + str(shapes[1]) + '_' + str(x_begin) + '_' + str(y_begin) + '.tif'), i)  #, r'white_5000'r'20210326_other_crop'
+
             x_list.append(x_begin)
             y_list.append(y_begin)
             img_list.append(i)
@@ -577,7 +575,7 @@ def split_preproc(image, cut_size, overlap=100):
             i = image[x_begin: x_end, y_begin: y_end]
             if i.shape[0] < 255 or i.shape[1] < 255:
                 continue
-            # tifffile.imsave(os.path.join('/home/lxx/work_space/segmentation_dev/result/cut_img/split', 'fov_stitched_auto_tile_regist' + '_' + str(shapes[0]) + '_' + str(shapes[1]) + '_' + str(x_begin) + '_' + str(y_begin) + '.tif'), i)  #, r'white_5000'r'20210326_other_crop'
+
             x_list.append(x_begin)
             y_list.append(y_begin)
             img_list.append(i)
@@ -603,9 +601,7 @@ def merge_preproc(label_list, x_list, y_list, shapes,  overlap=100, type=np.uint
         x_begin = int(info[0])
         # y_begin = int(info[1]) + overlap // 2
         y_begin = int(info[1])
-        # tifffile.imsave(os.path.join('/home/lxx/work_space/segmentation_dev/result/cut_img/m_split',
-        #                              'fov_stitched_auto_tile_regist' + '_' + str(h) + '_' + str(
-        #                                  w) + '_' + str(x_begin) + '_' + str(y_begin) + '.tif'), temp_img)
+
         if overlap == 0:
             image[int(x_begin): int(x_begin) + h - overlap, int(y_begin): int(y_begin) + w - overlap] = temp_img
         else:
@@ -629,6 +625,7 @@ def czi_save_tif(path, outpath):
     #     tifffile.imsave(os.path.join(outpath, os.path.splitext(file)[0]) + '_ssdna.tif', im[:, :, 0])
     #     tifffile.imsave(os.path.join(outpath, os.path.splitext(file)[0]) + '_cona.tif', im[:, :, 1])
     pass
+
 
 def czi2tif(path):
     if os.path.isdir(path):

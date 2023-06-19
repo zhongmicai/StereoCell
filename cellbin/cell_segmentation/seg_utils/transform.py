@@ -14,7 +14,6 @@ from skimage.exposure import rescale_intensity
 
 def percentile_threshold(img, percentile=99.9):
     """Threshold an image to reduce bright spots
-
     Args:
         image: numpy array of image data
         percentile: cutoff used to threshold image
@@ -35,6 +34,7 @@ def percentile_threshold(img, percentile=99.9):
         current_img[threshold_mask] = img_max
 
     return current_img
+
 
 def histogram_normalization(img, kernel_size=None):
     """Pre-process images using Contrast Limited Adaptive
@@ -67,6 +67,7 @@ def histogram_normalization(img, kernel_size=None):
 
 
 class transform(object):
+    """ Transform """
 
     def __init__(self, image):
         self.image = image
@@ -100,7 +101,6 @@ class transform(object):
         median_image = np.asarray(median_image.get())
         filter_image = cv2.subtract(self.image, median_image)
         return filter_image
-
 
     def mesmer_prepro(self, percentile=99.9, kernel_size=256):
         image = percentile_threshold(self.image, percentile)

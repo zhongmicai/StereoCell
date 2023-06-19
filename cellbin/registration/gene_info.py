@@ -37,6 +37,7 @@ class GeneInfo(object):
         return self.coord[ind][:, :2]
 
     def _load_gene_file(self, gene_file):
+        """ Load the text file into memory and generate an image according to the spatial coordinate relationship """
         if not osp.exists(gene_file): raise IOError('File not found in specified path: {}.'.format(gene_file))
         suffix = osp.splitext(gene_file)[1]
         if suffix in ['.txt', '.tsv', '.gem', '.gz']:
@@ -107,6 +108,7 @@ class GeneInfo(object):
         else: raise IOError('{} format is an unsupported file type.'.format(suffix))
 
     def detect_grid(self, ):
+        """ Locate the anchor position coordinate information in the stereo-seq matrix """
         def cross_points(x_intercept, y_intercept):
             cross_points_ = list()
             for x_ in x_intercept:
@@ -126,6 +128,7 @@ class GeneInfo(object):
         glog.info('Got track points by the XY lines completely.')
 
     def _mass_center_region(self, mode=0):
+        """ Preliminarily defined as the circumscribed rectangular frame of the organization area """
         def line_center(line):
             xx = np.array(range(len(line)))
             xx_cal = xx * line
@@ -159,7 +162,7 @@ class GeneInfo(object):
         return [x0, x1, y0, y1]
     
     def _single_direction_grid(self, region, axis=0, line_w=3):
-        ''' x: 0, y: 1 '''        
+        """ Locate the track line position information in a specific direction """
         def get_intercept(intercept, region, ind, templ):
             count = len(templ)
             idx = intercept
@@ -201,9 +204,8 @@ class GeneInfo(object):
         return get_intercept(start + fitune, (0, self.gene_mat_shape[axis]), ind, self.chip_mode[axis])
 
 
-from functools import partial
-
 def chunked_file_reader(file, block_size=1024 * 1024 * 256):
+    """ Reduce memory consumption of very large matrix files """
     fd = open(file, 'r')
     head_info = ''
     eoh = 0

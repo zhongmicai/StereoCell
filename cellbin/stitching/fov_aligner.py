@@ -14,9 +14,7 @@ import numpy as np
 
 
 class FOVAligner(object):
-    '''
-    计算出所有图像的偏移量
-    '''
+    """ Calculate the offset of all images """
     def __init__(self, images_path, rows, cols, mode='FFT', multi=True):
         self.set_size(rows, cols)
         self.set_images_path(images_path)
@@ -40,9 +38,7 @@ class FOVAligner(object):
         self.cols = cols
 
     def create_jitter(self):
-        '''
-        Scan image and create offset.
-        '''
+        """ Scan image and create offset. """
         confi_mask = np.zeros((self.rows, self.cols, 2)) - 1
         ncc_confi_mask = np.zeros((self.rows, self.cols, 2)) - 1
 
@@ -155,6 +151,7 @@ class FOVAligner(object):
         return e
 
     def _multi_jitter(self, jitter, confi, row=None, col=None, axis=0):
+        """ Scan calculation offset value in characteristic direction """
         if axis == 0:
             train = self._get_image(row, 0)
             for col_index in range(1, self.cols):
@@ -194,7 +191,7 @@ class FOVAligner(object):
     @staticmethod
     def filter_abnormal_offset(offset: np.array, stitch_confi_mask: np.ndarray, thread: int = 2):
         """
-        过滤异常的offset
+        filter outliers for offset
         :param offset: W*H*C
         :return:
         """
@@ -232,6 +229,7 @@ class FOVAligner(object):
 
 
 class Matcher(object):
+    """ Base Matcher """
 
     def __init__(self):
         self.overlap = 0.1
@@ -260,9 +258,7 @@ class Matcher(object):
     @staticmethod
     def slice_image(image: np.ndarray, slice_width: int, slice_height: int,
                     overlap_height_ratio=0.2, overlap_width_ratio=0.2):
-        """
-        Image is cropped and stacked
-        """
+        """ Image is cropped and stacked """
         if image.ndim == 3:
             image_height, image_width, _ = image.shape
         else:
@@ -305,6 +301,7 @@ class Matcher(object):
 
 
 class SIFTMatcher(Matcher):
+    """ SIFT Matcher """
     def __init__(self, ):
         super(SIFTMatcher, self).__init__()
         self.sift = cv.SIFT_create()
@@ -323,6 +320,7 @@ class SIFTMatcher(Matcher):
         return self.sift_match(train_local, query_local)
 
     def sift_match(self, train, query):
+        """ Get offset by SIFT method """
         psd_kp1, psd_des1 = self.sift.detectAndCompute(train, None)
         kps1 = np.float32([kp.pt for kp in psd_kp1])
         psd_kp2, psd_des2 = self.sift.detectAndCompute(query, None)
@@ -360,6 +358,7 @@ class SIFTMatcher(Matcher):
 
 
 class FFTMatcher(Matcher):
+    """ FFT Matcher """
     def __init__(self):
         super(FFTMatcher, self).__init__()
 

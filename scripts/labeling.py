@@ -22,3 +22,7 @@ def main():
     args = args_parse()
     correction = CellCorrection(args.mask_path, args.gem_path, args.out_path, args.threshold, args.process)
     correction.cell_correct()
+
+
+if __name__ == '__main__':
+    main()

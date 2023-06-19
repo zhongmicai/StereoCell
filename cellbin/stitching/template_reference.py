@@ -13,8 +13,27 @@ import math
 
 
 class TemplateReference:
+    """ Template Reference """
     def __init__(self, ):
-        #input
+        """Initialize Template Reference.
+
+        Args:
+          chip_no: STOmics chip number
+          scale_x: The X-direction scale factor of the stain image relative to the gene matrix.
+          scale_y: The Y-direction scale factor of the stain image relative to the gene matrix.
+          rotation: The rotation factor of the stain image relative to the gene matrix.
+          qc_pts: Anchor points detect by imageQC module.
+          template_qc_pts:
+          x_intercept: Gene matrix line spacing in the horizontal direction.
+          y_intercept: Gene matrix line spacing in the vertical direction.
+          fov_loc_array: Each FOV space coordinate matrix.
+          template_center_pt: The starting local space point for template construction.
+          template_qc:
+          mosaic_height: Height of mosaic image.
+          mosaic_width: Width of mosaic image.
+          template: Total anchor points of mosaic image
+          template_src:
+        """
         self.chip_no: list = list()
         self.scale_x: float = 1.0
         self.scale_y: float = 1.0
@@ -30,7 +49,7 @@ class TemplateReference:
         self.template_qc: list = []
         self.mosaic_height = None
         self.mosaic_width = None
-        self.__min_distance = None # 最小化距离法中 当前最小距离值
+        self.__min_distance = None  # The current minimum distance value in the minimum distance method
 
         # output
         self.template: list = list()
@@ -50,7 +69,7 @@ class TemplateReference:
 
     def set_chipno(self, chip_no):
         '''
-        :param chip_no: 芯片标准周期
+        :param chip_no: Chip standard cycle
         :return:
         '''
         assert type(chip_no) == list or type(chip_no) == np.ndarray, "ChipNO must be a list or array."
@@ -58,7 +77,7 @@ class TemplateReference:
 
     def set_fov_location(self, global_loc):
         '''
-        :param global_loc: 全局拼接坐标
+        :param global_loc: global stitching coordinates
         :return:
         '''
         self.fov_loc_array = global_loc
@@ -102,10 +121,10 @@ class TemplateReference:
     ################
     def __delete_outline_points(self, points_re, points_qc, range_size=5000):
         '''
-        离群点删除
+        Outlier removal
         :param points_re:
         :param points_qc:
-        :param range_size: 框选尺寸
+        :param range_size: Marquee size
         :return:
         '''
         _points_qc = list()
@@ -125,9 +144,7 @@ class TemplateReference:
         # assert len(self.qc_pts) != 0 and len(self.template_qc_pts) != 0, "QC points is need init."
 
     def __global_qc_points_to_global(self):
-        '''
-        当QC点是全局点时使用 一般不用！！！
-        '''
+        """ Use when the QC point is a global point Generally not used """
         points_list = [self.qc_pts]
         for type_points in points_list:
             for fov_name in type_points.keys():
@@ -138,7 +155,7 @@ class TemplateReference:
                     break
 
     def __qc_points_to_gloabal(self):
-        '''QC点映射到全局坐标'''
+        """ QC points mapped to global coordinates """
         points_list = [self.qc_pts]
         for type_points in points_list:
             for fov_name in type_points.keys():
@@ -179,7 +196,7 @@ class TemplateReference:
         return theta, s_x, s_y
 
     def __mean_to_scale_and_rotate(self, points_re, points_qc):
-        '''求模板点和QC点 scale和rotate 差异的均值'''
+        """ Find the mean value of the scale and rotate differences between the template point and the QC point """
         scale_x_list = []
         scale_y_list = []
         rotate_list = []
@@ -217,7 +234,7 @@ class TemplateReference:
 
     @staticmethod
     def __leastsq_to_scale_and_rotate(point_re, point_qc):
-        '''最小化模板点和QC点距离 并求解出结果'''
+        """ Minimize the distance between the template point and the QC point and solve the result """
         # point_re = np.array([[61.237, 35.355], [-35.355, 61.237], [-61.237, -35.355], [35.355, -61.237]])
         # point_qc = np.array([[100, 100], [-100, 100], [-100, -100], [100, -100]])
         from scipy.optimize import leastsq, minimize
@@ -261,9 +278,7 @@ class TemplateReference:
         return para
 
     def __caculate_scale_and_rotate(self, points_re, points_qc, mode='minimize', update=True):
-        '''
-        使用模板点和QC点计算出scale和rotate
-        '''
+        """ Calculate scale and rotate using template points and QC points """
         if points_re.shape[1] == 4:
             points_re = points_re[:, :2]
 
@@ -274,7 +289,7 @@ class TemplateReference:
         points_qc[:, 1] = self.template_center_pt[1] - points_qc[:, 1]
 
         if mode == 'minimize':
-            # 最小值距离优化法
+            # Minimum distance optimization method
             para = self.__leastsq_to_scale_and_rotate(points_re, points_qc)
             _scale_x, _scale_y, _rotate = para.x
             self.__min_distance = para.fun / len(points_re)
@@ -283,7 +298,7 @@ class TemplateReference:
                 self.scale_x *= (1 + _scale_x)
                 self.scale_y *= (1 + _scale_y)
         elif mode == 'mean':
-            # 均值法
+            # mean method
             scale_x, scale_y, rotate = self.__mean_to_scale_and_rotate(points_re, points_qc)
             if update:
                 self.rotation = rotate
@@ -307,7 +322,7 @@ class TemplateReference:
             self.__qc_points_to_gloabal()
             # self.__global_qc_points_to_global()
             points_qc = np.zeros([0, 2])
-            count = 0  # 循环次数
+            count = 0
             while count < max_item:
                 points_re, points_qc = self.pair_to_template(self.template_qc, self.template)
 
@@ -356,7 +371,7 @@ class TemplateReference:
 
     def get_template_eval(self):
         '''
-        :return:  max(dis), mean(dis) 获得此时模板与QC点的最大值与均值
+        :return:  max(dis), mean(dis) Obtain the maximum value and average value of the template and QC points at this time
         '''
         points_re, points_qc = self.pair_to_template(self.template_qc, self.template)
         distances = list()
@@ -368,7 +383,7 @@ class TemplateReference:
 
     def __find_center_close_point(self, points, n=5):
         '''
-        找寻距离全图中心点最近的已推导模板点
+        Find the derived template point closest to the center point of the full graph
         :param points: [x, y, ind_x, ind_y]
         :return: self.template_center_pt
         '''
@@ -456,8 +471,8 @@ class TemplateReference:
     def save_template(self, output_path, template=None):
         '''
         :param output_path:
-        :param template: 可传入其他模板保存
-        :return: 保存模板点
+        :param template: Other templates can be passed in for saving
+        :return: save template points
         '''
         if template is None:
             _template = self.template

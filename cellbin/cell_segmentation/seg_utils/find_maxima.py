@@ -4,7 +4,7 @@ import numpy as np
 
 
 def isWithin(x, y, direction, width, height):
-    # Depending on where we are and where we are heading, return the appropriate inequality.
+    """ Depending on where we are and where we are heading, return the appropriate inequality. """
     xmax = width - 1
     ymax = height - 1
     if direction == 0:
@@ -28,6 +28,7 @@ def isWithin(x, y, direction, width, height):
 
 
 def find_local_maxima(img_data):
+    """ Locate local extremum point coordinates """
     globalMin = np.min(img_data)
     height = img_data.shape[0]
     width = img_data.shape[1]

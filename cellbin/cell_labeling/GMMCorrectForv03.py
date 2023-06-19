@@ -88,8 +88,19 @@ def creat_cell_gxp(maskFile,geneFile,outpath='./', transposition=False, fileName
 
 
 class CellCorrection(object):
+    """ Cell labeling """
 
     def __init__(self, mask_file, gem_file, out_path, threshold, process):
+        """Initialize Cell Labeling.
+
+        Args:
+          mask_file: Binarized cell segmentation image file.
+          gem_file: Gene matrix file.
+          out_path: Output path of gene matrix.
+          threshold: local area radius.
+          process: Resource scheduling parameters, the number of processes
+                that need to be specified.
+        """
         self.mask_file = mask_file
         self.gem_file = gem_file
         self.out_path = out_path
@@ -97,7 +108,8 @@ class CellCorrection(object):
         self.process = process
         self.radius = 50
 
-    def __creat_gxp_data(self):
+    def __creat_gxp_data(self, ):
+        """load the gene matrix into memory, returns single cell data."""
         data = creat_cell_gxp(self.mask_file, self. gem_file, outpath=self.out_path,
                               transposition=False, fileName='cellbin_gmm.txt')
 
@@ -118,7 +130,9 @@ class CellCorrection(object):
 
     def _GMM_score(self, data, cell_coor):
         radius = self.radius
+
         def GMM_func(x, p_num):
+            """ Single cell online GMM learning """
             t0 = time.time()
             p_data = []
             if not os.path.exists(os.path.join(self.out_path, 'bg_adjust_label')):
@@ -187,6 +201,7 @@ class CellCorrection(object):
         correct_data.to_csv(os.path.join(self.out_path, 'correction_gmm.txt'), sep='\t', index=False)
 
     def cell_correct(self, ):
+        """ Control program of Cell labeling """
         if not os.path.exists(os.path.join(self.out_path, 'bg_adjust_label')):
             os.mkdir(os.path.join(self.out_path, 'bg_adjust_label'))
 

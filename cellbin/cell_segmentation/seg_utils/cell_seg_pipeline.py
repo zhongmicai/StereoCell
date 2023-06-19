@@ -14,8 +14,18 @@ import glog
 
 
 class CellSegPipe(object):
+    """ Pipeline of cell segmentation """
 
     def __init__(self, img_path, out_path, is_water=0, DEEP_CROP_SIZE=20000, OVERLAP=100):
+        """Initialize segmentation
+
+        Args:
+            img_path: path of stain image
+            out_path: path of the cell mask
+            is_water: if use watershed method or not
+            DEEP_CROP_SIZE:
+            OVERLAP: When splitting, the overlap rate between adjacent graphs
+        """
         self.deep_crop_size = DEEP_CROP_SIZE
         self.overlap = OVERLAP
         self.__img_path = img_path
@@ -51,7 +61,10 @@ class CellSegPipe(object):
         self.image_preprocess = []
 
     def __imload_list(self, img_path):
-
+        """
+        Args:
+            img_path: path of input image
+        """
         if self.__is_list:
             img_list = []
             for idx, file in enumerate(self.__file):
@@ -197,8 +210,8 @@ class CellSegPipe(object):
         return self.cell_mask
 
     def watershed_score(self, cell_mask):
-
         """watershed and score on cell mask by neural network"""
+
         for idx, cell_mask in enumerate(cell_mask):
             cell_mask = np.squeeze(np.asarray(cell_mask))
 
@@ -224,8 +237,8 @@ class CellSegPipe(object):
         # self.post_mask_list.append(post_mask)
 
     def post_process(self, cell_masks):
-
         """post_process on cell mask by neural network"""
+
         for idx, cell_mask in enumerate(cell_masks):
             cell_mask = np.squeeze(np.asarray(cell_mask))
             post_mask = grade.edgeSmooth(cell_mask)
@@ -237,8 +250,8 @@ class CellSegPipe(object):
             tifffile.imsave(join(self.__out_path, self.__file_name[idx] + r'_tissue_cut.tif'), tissue_thumb)
 
     def __mkdir_subpkg(self):
-
         """make new dir while image is large"""
+
         assert self.__is_list == False
         file = self.__file[0]
         file_name = splitext(file)[0]
@@ -265,19 +278,19 @@ class CellSegPipe(object):
                          self.post_mask_list[idx], compression="zlib", compressionargs={"level": 8})
 
     def save_cell_mask(self):
-
         """save cell mask from network or watershed"""
+
         for idx, file in enumerate(self.__file):
             file_name, _ = os.path.splitext(file)
             self.__save_each_file_result(file_name, idx)
 
     def save_result(self):
-
         """save tissue mask"""
+
         self.save_cell_mask()
 
     def run_tissue_cell_seg(self):
-
+        """ Inference for tissue Segmentation """
         t0 = time.time()
         try:
             self.tissue_mask = [tifffile.imread(os.path.join(self.__out_path, self.__file_name[0] + '_tissue_cut.tif'))]
@@ -313,6 +326,7 @@ class CellSegPipe(object):
         glog.info('Result saved : %s ' % (self.__out_path))
 
     def run_cell_seg(self):
+        """ Inference for cell Segmentation """
         torch.set_num_threads(20)
         ### preprocess ###
         t1 = time.time()

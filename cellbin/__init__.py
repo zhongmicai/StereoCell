@@ -93,7 +93,8 @@ def rotatedRectWithMaxArea(w, h, angle):
 
 
 class ImageTransform(pyvips.Image):
-    def __init__(self):
+    """ Image Transform """
+    def __init__(self, ):
         self.image = None
 
     def set_image(self, image_path):
@@ -198,9 +199,7 @@ class ImageTransform(pyvips.Image):
                                            oarea=[0, 0, w, h])
 
     def __affine_transform(self, scale_x=None, scale_y=None, rotation=None):
-        """
-        仿射
-        """
+        """ Affine transform """
         if scale_x is None: scale_x = 1
         if scale_y is None: scale_y = 1
         if rotation is None: rotation = 0
@@ -236,6 +235,7 @@ class ImageTransform(pyvips.Image):
 
 
 class CellBinElement(object):
+    """ Cell Bin Element """
     def __init__(self):
         self.schedule = None
         self.task_name = ''
@@ -243,6 +243,7 @@ class CellBinElement(object):
 
 
 class Image(object):
+    """ Image Base class """
     def __init__(self):
         self.suffix: str = ''
         self.image = None
