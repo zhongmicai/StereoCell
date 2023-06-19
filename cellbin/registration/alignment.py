@@ -52,7 +52,35 @@ def f_padding(img, top, bot, left, right, mode='constant', value=0):
 
 class AlignByTrack:
     """ Align By Track """
+
     def __init__(self):
+        """Initialize AlignByTrack.
+        Vision image: generated based on gene expression matrix
+        Transformed image obtained based on
+            - stitched image
+            - scale and rotation
+
+        Transformed image should be in the same scale compared to vision image
+
+        Transformed image and vision image only contain:
+            - n times 90 degree rotation (e.g. 90, 180, 270, etc.)
+            - x, y direction offsets
+
+        Args:
+            self.x_template (list): chip template on x direction
+            self.y_template (list): chip template on y direction
+            self.fov_size (float): length of a period on chip template
+            self.dist_thresh (float): maximum distance threshold
+            self.transformed_shape (tuple): shape of tranformed image
+            self.transformed_mass (nd array): mass center of transformed image
+            self.vision_shape (tuple): shape of vision image
+            self.vision_mass (nd array): mass center of vision image
+            self.vision_img (nd array): vision image
+            self.transformed_image (nd array): transformed image
+            self.transformed_cfov_pts (nd array): selected cross points on transform image
+            self.vision_cfov_pts (nd array): selected cross points on vision image
+        """
+
         self.search_angle_set = (0, 90, 180, 270)
         self.search_range_x = [-2, -1, 0, 1, 2]
         self.search_range_y = [-2, -1, 0, 1, 2]

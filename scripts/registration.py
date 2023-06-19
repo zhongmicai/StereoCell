@@ -67,6 +67,15 @@ class Regist(object):
 
     def set_stereo_chip(self, c): self._stereo_chip = c
 
+    def is_QC_pass(self, ):
+        import json
+        json_path = glob.glob(os.path.join(self._output_path, '*.json'))[0]
+        with open(json_path, 'r') as fd:
+            dct = json.load(fd)
+        flag = dct['QCInfo']['QCResultFlag']
+        x = (flag == 1 and True or False)
+        return x
+
     def _image_qc(self, ):
         glog.info('Anchor point positioning for subsequent registration process')
         cmd = '{} {} -i {} -o {} -c {} -n {} -e {}'.format(
@@ -144,10 +153,14 @@ class Regist(object):
         self._gene_matrix = gem
         glog.info('Start RUN StereoCell registration')
         self._image_qc()
-        self._stitching()
-        if gem is None: glog.warn('Miss gene matrix, will finished the pipeline')
-        self._gene_matrix = gem
-        self._registration()
+        if self.is_QC_pass():
+            glog.warn('Image QC pass')
+            self._stitching()
+            if gem is None: glog.warn('Miss gene matrix, will finished the pipeline')
+            self._gene_matrix = gem
+            self._registration()
+        else:
+            glog.warn('The track point detection failed and the follow-up process could not be completed')
 
 
 """ Usage
