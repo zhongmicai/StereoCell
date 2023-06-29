@@ -111,7 +111,7 @@ class CellCorrection(object):
     def __creat_gxp_data(self, ):
         """load the gene matrix into memory, returns single cell data."""
         data = creat_cell_gxp(self.mask_file, self. gem_file, outpath=self.out_path,
-                              transposition=False, fileName='cellbin_gmm.txt')
+                              transposition=False, fileName='nuclei_mask_profile.txt')
 
         if 'MIDCounts' in data.columns:
             data = data.rename(columns={'MIDCounts': 'UMICount'})
@@ -198,7 +198,7 @@ class CellCorrection(object):
         adjust_data['tag'] = '1'   #adjust
         cell_data['tag'] = '0'  #raw
         correct_data = pd.concat([adjust_data, cell_data])
-        correct_data.to_csv(os.path.join(self.out_path, 'correction_gmm.txt'), sep='\t', index=False)
+        correct_data.to_csv(os.path.join(self.out_path, 'cell_mask_profile.txt'), sep='\t', index=False)
 
     def cell_correct(self, ):
         """ Control program of Cell labeling """

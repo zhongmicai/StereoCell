@@ -58,20 +58,20 @@ sciences through algorithms. STOmics reserves the right to interpret it.
 It supports [stitching, registration, tissue segmentation, cell segmentation and Cell labeling](docs/modules.md), also supports whole pipeline analysis of StereoCell.
 in pipeline analysis, arguments are described as follows:
 
-*  ```--input```  Image data produced by microscopy. 
-* ```--matrix``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
-* ```--chipno``` Serial number of STOmics chip. 
-* ```--output``` The output path of single cell gene matrix produced by StereoCell. 
+* ```--tiles_path```  Image data produced by microscopy. 
+* ```--gene_exp_data``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
+* ```--chip_no``` Serial number of STOmics chip. 
+* ```--output_path``` The output path of single cell gene matrix produced by StereoCell. 
 
 ```shell
 cd scripts
 
 # Pipeline
-python .\pipeline.py \
---input D:\data\test\SS200000135TL_D1 \
---matrix D:\data\test\SS200000135TL_D1.gem.gz  \
---output D:\data\test
---chipno SS200000135TL_D1
+python .\stereocell.py \
+--tiles_path /data/SS200000135TL_D1 \
+--gene_exp_data /data/SS200000135TL_D1.gem.gz  \
+--output_path /data/result
+--chip_no SS200000135TL_D1
 ```
 [More about output](docs/details.md)
 

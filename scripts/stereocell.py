@@ -142,43 +142,43 @@ class Pipeline(object):
             tifffile.imwrite(matrix_path, gene_mat, compression="zlib", compressionargs={"level": 8})
             glog.info('Save matrix bin-1 data to {}'.format(matrix_path))
 
-        fov_stitched = tifffile.imread(os.path.join(self._output_path, 'stitched.tif'))
+        fov_stitched = tifffile.imread(os.path.join(self._output_path, 'stitched_image.tif'))
         r = Registration()
         r.mass_registration_stitch(fov_stitched=fov_stitched, vision_image=gene_mat,
                                    chip_template=self._stereo_chip_mode, track_template=self._template,
                                    scale_x=1 / self._scale_x, scale_y=1 / self._scale_y, rotation=self._rotation, flip=True)
         r.transform_to_regist()
-        tifffile.imwrite(os.path.join(self._output_path, 'registration.tif'), r.regist_img)
+        tifffile.imwrite(os.path.join(self._output_path, 'registered_image.tif'), r.regist_img)
 
     def _tissue_cut(self, ):
         """ Get Tissue Boundary Information in stain image """
-        image_path = os.path.join(self._output_path, 'registration.tif')
-        tissue_cut(image_path, output=os.path.join(self._output_path, 'registration_tissue_segmentation.tif'))
+        image_path = os.path.join(self._output_path, 'registered_image.tif')
+        tissue_cut(image_path, output=os.path.join(self._output_path, 'tissue_mask.tif'))
 
     def _cell_cut(self, ):
         """ Get Cell Boundary Information in stain image """
-        image_path = os.path.join(self._output_path, 'registration.tif')
+        image_path = os.path.join(self._output_path, 'registered_image.tif')
         cell_seg(image_path, self._output_path, flag=1)
 
     def _labeling(self, ):
         """ Expanding cell boundaries to capture greater numbers of genes within a single cell """
-        # from cellbin.cell_labeling.GMMCorrectForv03 import CellCorrection
-        # from multiprocessing import cpu_count
-        #
-        # mask_file = os.path.join(self._output_path, 'registration_cell_segmentation.tif')
-        # gem_file = self._gene_matrix
-        # out_path = self._output_path
-        # threshold = 20
-        # process = min(cpu_count() // 2, 3)
-        # cc = CellCorrection(mask_file, gem_file, out_path, threshold, process)
-        # cc.cell_correct()
-        mask_file = os.path.join(self._output_path, 'registration_tissue_segmentation.tif')
-        glog.info('Generate stereo-seq filter matrix')
-        cmd = '{} {} -g {} -t {} -o {}'.format(
-            sys.executable, './tissue_bin.py',
-            self._gene_matrix, mask_file, self._output_path)
-        print(cmd)
-        os.system(cmd)
+        from cellbin.cell_labeling.GMMCorrectForv03 import CellCorrection
+        from multiprocessing import cpu_count
+
+        mask_file = os.path.join(self._output_path, 'nuclei_mask.tif')
+        gem_file = self._gene_matrix
+        out_path = self._output_path
+        threshold = 20
+        process = min(cpu_count() // 2, 3)
+        cc = CellCorrection(mask_file, gem_file, out_path, threshold, process)
+        cc.cell_correct()
+        # mask_file = os.path.join(self._output_path, 'tissue_mask.tif')
+        # glog.info('Generate stereo-seq filter matrix')
+        # cmd = '{} {} -g {} -t {} -o {}'.format(
+        #     sys.executable, './tissue_bin.py',
+        #     self._gene_matrix, mask_file, self._output_path)
+        # print(cmd)
+        # os.system(cmd)
 
     def run(self, image: str, output: str, stereo_chip: str, gem=None):
         """ Pipeline of StereoCell """
@@ -202,7 +202,7 @@ class Pipeline(object):
 
 
 """ Usage
-python .\pipeline.py \
+python .\pstereocell.py \
 --input D:\data\test\SS200000135TL_D1 \
 --output D:\data\test\paper \
 --matrix D:\data\test\SS200000135TL_D1.gem.gz \
@@ -221,25 +221,25 @@ def main(args, para):
     # chip_no = 'SS200000135TL_D1'
     # gem_file = r'D:\data\test\SS200000135TL_D1.gem.gz'
 
-    input = args.input
-    output = args.output
-    chip_no = args.chipno
-    gem_file = args.matrix
+    input = args.tiles_path
+    output = args.output_path
+    chip_no = args.chip_no
+    gem_file = args.gene_exp_data
 
     p = Pipeline()
     p.run(image=input, output=output, stereo_chip=chip_no, gem=gem_file)
 
 
 if __name__ == '__main__':
-    usage="""Stitching (StereoCell)"""
+    usage=""" StereoCell """
     PROG_VERSION='v0.0.1'
 
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=PROG_VERSION)
-    parser.add_argument("-i", "--input", action="store", dest="input", type=str, required=True, help="Input image dir.")
-    parser.add_argument("-m", "--matrix", action="store", dest="matrix", type=str, required=True, help="Input gene matrix.")
-    parser.add_argument("-c", "--chipno", action="store", dest="chipno", type=str, required=True, help="Stereo-seq chip No.")
-    parser.add_argument("-o", "--output", action="store", dest="output", type=str, required=True, help="Result output dir.")
+    parser.add_argument("-t", "--tiles_path", action="store", dest="tiles_path", type=str, required=True, help="The path of tile images.")
+    parser.add_argument("-g", "--gene_exp_data", action="store", dest="gene_exp_data", type=str, required=True, help="Input gene matrix.")
+    parser.add_argument("-c", "--chip_no", action="store", dest="chip_no", type=str, required=True, help="Stereo-seq chip No.")
+    parser.add_argument("-o", "--output_path", action="store", dest="output_path", type=str, required=True, help="Result output dir.")
     parser.set_defaults(func=main)
     (para, args) = parser.parse_known_args()
     para.func(para, args)

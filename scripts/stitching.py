@@ -29,10 +29,10 @@ def image_map(images):
 
 
 def main(args, para):
-    tiles = search_files(args.input, ['.tif'])
+    tiles = search_files(args.tiles_path, ['.tif'])
     imap = image_map(tiles)
     s = Stitcher()
-    s.stitch(imap, output_path=args.output)
+    s.stitch(imap, output_path=args.output_file)
 
 
 if __name__ == '__main__':
@@ -41,8 +41,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=PROG_VERSION)
-    parser.add_argument("-i", "--input", action="store", dest="input", type=str, required=True, help="Input image dir.")
-    parser.add_argument("-o", "--output", action="store", dest="output", type=str, required=True, help="Result output dir.")
+    parser.add_argument("-t", "--tiles_path", action="store", dest="tiles_path", type=str, required=True, help="Input image dir.")
+    parser.add_argument("-o", "--output_file", action="store", dest="output_file", type=str, required=True, help="Result output dir.")
     parser.set_defaults(func=main)
     (para, args) = parser.parse_known_args()
     para.func(para, args)

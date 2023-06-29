@@ -273,7 +273,7 @@ class CellSegPipe(object):
             os.mkdir(self.__subpkg_score)
 
     def __save_each_file_result(self, file_name, idx):
-        mask_name = r'_cell_segmentation.tif'
+        mask_name = r'nuclei_mask.tif'
         tifffile.imwrite(join(self.__out_path, file_name + mask_name),
                          self.post_mask_list[idx], compression="zlib", compressionargs={"level": 8})
 

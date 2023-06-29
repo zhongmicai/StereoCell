@@ -107,7 +107,7 @@ class Stitcher(CellBinElement):
             wsi = StitchingWSI()
             wsi.set_overlap(self._overlap)
             wsi.mosaic(src_fovs, self.fov_location, multi=False)
-            wsi.save(os.path.join(output_path, 'stitched.tif'), compression=False)
+            wsi.save(os.path.join(output_path, 'stitched_image.tif'), compression=False)
             end_time = time.time()
             glog.info("Stitch image time -- {}s".format(end_time - start_time))
 

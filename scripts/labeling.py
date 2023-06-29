@@ -9,9 +9,9 @@ from cellbin.cell_labeling.GMMCorrectForv03 import CellCorrection
 def args_parse():
     usage = """ Usage: %s Cell expression file (with background) path, multi-process """
     arg = argparse.ArgumentParser(usage=usage)
-    arg.add_argument('-m', '--mask_path', help='cell mask')
-    arg.add_argument('-g', '--gem_path', help='gem file')
-    arg.add_argument('-o', '--out_path', help='output path', default='./')
+    arg.add_argument('-i', '--image_file', help='cell mask')
+    arg.add_argument('-g', '--gene_exp_data', help='gem file')
+    arg.add_argument('-o', '--output_path', help='output path', default='./')
     arg.add_argument('-p', '--process', help='n process', type=int, default=10)
     arg.add_argument('-t', '--threshold', help='threshold', type=int, default=20)
 
@@ -20,7 +20,7 @@ def args_parse():
 
 def main():
     args = args_parse()
-    correction = CellCorrection(args.mask_path, args.gem_path, args.out_path, args.threshold, args.process)
+    correction = CellCorrection(args.image_file, args.gene_exp_data, args.output_path, args.threshold, args.process)
     correction.cell_correct()
 
 

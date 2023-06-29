@@ -179,10 +179,10 @@ def main(args, para):
     # chip_no = 'SS200000135TL_D1'
     # gem_file = r'D:\data\test\SS200000135TL_D1.gem.gz'
 
-    input = args.input
-    output = args.output
-    chip_no = args.chipno
-    gem_file = args.matrix
+    input = args.image_file
+    output = args.output_file
+    chip_no = args.chip_no
+    gem_file = args.gene_exp_data
 
     p = Regist()
     p.run(image=input, output=output, stereo_chip=chip_no, gem=gem_file)
@@ -194,10 +194,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=PROG_VERSION)
-    parser.add_argument("-i", "--input", action="store", dest="input", type=str, required=True, help="Input image dir.")
-    parser.add_argument("-m", "--matrix", action="store", dest="matrix", type=str, required=True, help="Input gene matrix.")
-    parser.add_argument("-c", "--chipno", action="store", dest="chipno", type=str, required=True, help="Stereo-seq chip No.")
-    parser.add_argument("-o", "--output", action="store", dest="output", type=str, required=True, help="Result output dir.")
+    parser.add_argument("-i", "--image_file", action="store", dest="image_file", type=str, required=True, help="Input image dir.")
+    parser.add_argument("-g", "--gene_exp_data", action="store", dest="gene_exp_data", type=str, required=True, help="Input gene matrix.")
+    parser.add_argument("-c", "--chip_no", action="store", dest="chip_no", type=str, required=True, help="Stereo-seq chip No.")
+    parser.add_argument("-o", "--output_file", action="store", dest="output_file", type=str, required=True, help="Result output dir.")
     parser.set_defaults(func=main)
     (para, args) = parser.parse_known_args()
     para.func(para, args)
