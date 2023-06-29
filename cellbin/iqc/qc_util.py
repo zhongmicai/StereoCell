@@ -105,37 +105,36 @@ class QualityControl(object):
         else:
             _, self.ext = os.path.splitext(self.input_path)
         if self.ext in ['.tif', '.png']:
-            pass
-            # self.si.ImageInfo.ImagePath = self.input_path
-            # try:
-            #     curr_dir = osp.dirname(osp.abspath(__file__))
-            #     cfg_path = osp.join(curr_dir, "", 'extraInfo.json')
-            #     cfg_info = common.json_deserialize(cfg_path)
-            #     glog.info(f"using extra info from {cfg_path}")
-            #     # cfg_info = common.json_deserialize(os.path.join(abspath(get_path()), 'extraInfo.json'))
-            #     self.read_config(cfg_info)
-            # except Exception as e:
-            #     print(e)
-            #     if self.language.lower() == 'chn':
-            #         self.report_str += '请正确填写额外信息。\n'
-            #     elif self.language.lower() == 'chn':
-            #         self.report_str += 'Please input extra info corretly.\n'
-            #     return -1
-            # try:
-            #     br = big_image_reader.BigImageReader(
-            #         file_path=self.input_path,
-            #         save_path=self.output_path,
-            #         manufacturer=self.si.ImageInfo.Manufacturer,
-            #         chip_name=self.chip_name,
-            #         overlap=self.si.ImageInfo.Overlap,
-            #         fov_height=self.si.ImageInfo.FOVHeight,
-            #         fov_width=self.si.ImageInfo.FOVWidth,
-            #         scope_info=self.si
-            #     )
-            #     self.si = br.scope_info
-            #     print("asd")
-            # except Exception as e:
-            #     glog.info(Exception)
+            self.si.ImageInfo.ImagePath = self.input_path
+            try:
+                curr_dir = dirname(abspath(__file__))
+                cfg_path = join(curr_dir, "", 'extraInfo.json')
+                cfg_info = common.json_deserialize(cfg_path)
+                glog.info(f"using extra info from {cfg_path}")
+                # cfg_info = common.json_deserialize(os.path.join(abspath(get_path()), 'extraInfo.json'))
+                self.read_config(cfg_info)
+            except Exception as e:
+                print(e)
+                if self.language.lower() == 'chn':
+                    self.report_str += '请正确填写额外信息。\n'
+                elif self.language.lower() == 'chn':
+                    self.report_str += 'Please input extra info corretly.\n'
+                return -1
+            try:
+                br = big_image_reader.BigImageReader(
+                    file_path=self.input_path,
+                    save_path=self.output_path,
+                    manufacturer=self.si.ImageInfo.Manufacturer,
+                    chip_name=self.chip_name,
+                    overlap=self.si.ImageInfo.Overlap,
+                    fov_height=self.si.ImageInfo.FOVHeight,
+                    fov_width=self.si.ImageInfo.FOVWidth,
+                    scope_info=self.si
+                )
+                self.si = br.scope_info
+                print("asd")
+            except Exception as e:
+                glog.info(Exception)
 
         elif self.ext == '':  # if input path is a folder
             # check if it is motic folder

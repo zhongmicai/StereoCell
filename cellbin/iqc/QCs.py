@@ -97,8 +97,6 @@ def cal_bad_num(PATH, si):
     resize_shape, FOV_size, ori_size, mean_int = cut_image(img, magnification, os.path.splitext(os.path.basename(PATH))[0], output_dir, cut_type, si)
 
     row, col = get_row_col(output_dir)
-
-
     return output_dir, ori_size, [row, col], mean_int
 
 

@@ -188,6 +188,9 @@ def main(args, para):
     p.run(image=input, output=output, stereo_chip=chip_no, gem=gem_file)
 
 
+"""
+python registration.py -i D:\data\test\paper\stitched.tif -g D:\data\test\SS200000135TL_D1.gem.gz -c SS200000135TL_D1 -o D:\data\test\paper2
+"""
 if __name__ == '__main__':
     usage="""Registration (StereoCell)"""
     PROG_VERSION='v0.0.1'

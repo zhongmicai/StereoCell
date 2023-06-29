@@ -4,11 +4,11 @@ The corresponding execution is placed in directory __scripts__.
 ## Stitching
 ```text
 python .\stitching.py \
---input D:\data\test\SS200000135TL_D1\SS200000135TL_D1
---output D:\data\test\stitched.tif
+--tiles_path /data/SS200000135TL_D1
+--output_file /result/stitched_image.tif
 ```
-*  ```--input```  Image data produced by microscopy. 
-* ```--output``` The output path of the stitched image file. 
+*  ```--tiles_path```  Image data produced by microscopy. 
+* ```--output_file``` The output path of the stitched image file. 
 
 ## Registration
 First, we use the dark line detection algorithm to get alpha (the chip is often placed with an angle (alpha) when experimenter 
@@ -23,46 +23,46 @@ the accuracy of the registration.
 
 ```text
 python .\registration.py \
---input D:\data\test\SS200000135TL_D1 \
---output D:\data\test\paper \
---matrix D:\data\test\SS200000135TL_D1.gem.gz \
---chipno SS200000135TL_D1
+--image_file /result/stitched_image.tif \
+--output_file /data/register_image.tif \
+--gene_exp_data /data/SS200000135TL_D1.gem.gz \
+--chip_no SS200000135TL_D1
 ```
-*  ```--input```  Image data produced by microscopy. 
-* ```--matrix``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
-* ```--chipno``` Serial number of STOmics chip. 
-* ```--output``` The output path of single cell gene matrix produced by StereoCell. 
+*  ```--image_file```  Image data produced by microscopy. 
+* ```--gene_exp_data``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
+* ```--chip_no``` Serial number of STOmics chip. 
+* ```--output_file``` The output path of single cell gene matrix produced by StereoCell. 
 
 ## Tissue segmentation
 ```text
 python .\segmentation.py \
 --type tissue
---input D:\StereoCell\data\image_6467_16800_512_512.tif \
---output D:\StereoCell\data\image_tissue.tif \
+--image_file /result/register_image.tif \
+--output_file /result/tissue_mask.tif \
 ```
-*  ```--input```  Stain image, usually a registered image. 
+*  ```--image_file```  Stain image, usually a registered image. 
 * ```--type``` Is cell or tissue. 
-* ```--output``` The output path of binarized mask file. 
+* ```--output_file``` The output path of binarized mask file. 
 
 ## Cell segmentation
 ```text
 python .\segmentation.py \
---type cell
---input D:\StereoCell\data\image_6467_16800_512_512.tif \
---output D:\StereoCell\data\image_cell.tif \
+--type nuclei
+--image_file /result/register_image.tif \
+--output_file /result/tissue_mask.tif \
 ```
-* ```--input```  Stain image, usually a registered image. 
+* ```--image_file```  Stain image, usually a registered image. 
 * ```--type``` Is cell or tissue. 
-* ```--output``` The output path of binarized mask file. 
+* ```--output_file``` The output path of binarized mask file. 
 
 ## Cell labeling
 ```text
 python labeling.py \
 --mask_path D:\StereoCell\data\cell_mask.tif \
 --gem_path D:\StereoCell\data\gene.gem.gz \
---out_path D:\StereoCell\data
+--output_path D:\StereoCell\data
 ```
-* ```--mask_path``` The path of binarized cell mask file. 
-* ```--gem_path``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
-* ```--out_path``` The output path of single cell matrix. 
+* ```--image_file``` The path of binarized cell mask file. 
+* ```--gene_exp_data``` Gene matrix of [Stereo-seq](https://bgi-australia.com.au/stomics). 
+* ```--output_path``` The output path of single cell matrix. 
 
