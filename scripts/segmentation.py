@@ -17,7 +17,7 @@ def main(args, para):
 
 
 '''
-python .\segmentation.py  --type tissue --input D:\data\weights\135_D1.tif --output D:\data\weights\135_D1_mask.tif
+python .\segmentation.py  --type tissue --image_file D:\data\weights\135_D1.tif --output_file D:\data\weights\135_D1_mask.tif
 '''
 if __name__ == '__main__':
     usage = """Cell Segmentation (StereoCell)"""

@@ -220,6 +220,9 @@ class QualityControl(object):
         if self.ext == '.mdsx':
             stitch_loc = MR.stitch_info.loc
             MR.generate_xlsx(self.output_path, output_name)
+        elif self.ext in ['.tif', '.png']:
+            stitch_loc = br.stitch_info.loc
+            br.generate_xlsx(self.output_path, output_name)
 
         if not self.upload_only:
             pass

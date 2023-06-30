@@ -3,6 +3,7 @@ import os
 import sys
 import h5py
 import glog
+import pandas as pd
 import getpass
 import numpy as np
 _cellbin_ = os.path.join(os.path.split(os.path.abspath(__file__))[0], '..')
@@ -13,6 +14,7 @@ from cellbin.registration import Registration
 from cellbin.registration.gene_info import GeneInfo
 import tifffile
 import argparse
+import shutil
 
 
 def image_map(images):
@@ -36,6 +38,21 @@ def image_map(images):
     return dct
 
 
+def location2npy(xlsx: str):
+    def get_npy(arr):
+        h, w = arr.shape
+        h_ = int(h / 2)
+        mat = np.zeros((h_ - 1, w - 1, 2), dtype=np.int64)
+        mat[:, :, 0] = arr[1:h_, 1:]
+        mat[:, :, 1] = arr[h_ + 1:, 1:]
+        return mat
+
+    table_name = 'location'
+    pr = pd.read_excel(xlsx, sheet_name=[table_name], header=None)
+    location = get_npy(np.array(pr[table_name]))
+    return location
+
+
 class Regist(object):
     """ Registration module """
 
@@ -56,6 +73,7 @@ class Regist(object):
         """
         self._image_path = None
         self._output_path = None
+        self._output_dir = None
         self._stereo_chip = None
         self._stereo_chip_mode = None
         self._gene_matrix = None
@@ -69,7 +87,7 @@ class Regist(object):
 
     def is_QC_pass(self, ):
         import json
-        json_path = glob.glob(os.path.join(self._output_path, '*.json'))[0]
+        json_path = glob.glob(os.path.join(self._output_dir, '*.json'))[0]
         with open(json_path, 'r') as fd:
             dct = json.load(fd)
         flag = dct['QCInfo']['QCResultFlag']
@@ -80,27 +98,27 @@ class Regist(object):
         glog.info('Anchor point positioning for subsequent registration process')
         cmd = '{} {} -i {} -o {} -c {} -n {} -e {}'.format(
             sys.executable, '../cellbin/iqc/qc_util.py',
-            self._image_path, self._output_path,
+            self._image_path, self._output_dir,
             self._stereo_chip, 'test', getpass.getuser())
         print(cmd)
         os.system(cmd)
 
     def _h5_path(self, ):
-        items = glob.glob(os.path.join(self._output_path, '*.ipr'))
-        return os.path.join(self._output_path, items[0])
+        items = glob.glob(os.path.join(self._output_dir, '*.ipr'))
+        return os.path.join(self._output_dir, items[0])
+
+    def _xlsx_path(self, ):
+        items = glob.glob(os.path.join(self._output_dir, '*.xlsx'))
+        xlsx = os.path.join(self._output_dir, items[0])
+        return location2npy(xlsx)
 
     def _matrix_1bin(self, ):
-        items = glob.glob(os.path.join(self._output_path, '*_matrix.tif'))
-        if len(items): return os.path.join(self._output_path, items[0])
+        items = glob.glob(os.path.join(self._output_dir, '*_matrix.tif'))
+        if len(items): return os.path.join(self._output_dir, items[0])
         else: return None
 
     def _stitching(self, ):
-        glog.info('Whole Slide Stitching to generate Mosaic image')
-        tiles = search_files(os.path.join(self._image_path, self._stereo_chip), ['.tif'])
-        imap = image_map(tiles)
-        # Stitching
         s = Stitcher()
-        s.stitch(imap, output_path=self._output_path)
 
         ipr = self._h5_path()
         h5 = h5py.File(ipr, 'r')
@@ -113,6 +131,7 @@ class Regist(object):
         x, y = index.split('_')
         index = '{}_{}'.format(x.zfill(4), y.zfill(4))
         pts = h5['QCInfo']['CrossPoints']
+        s.set_global_location(self._xlsx_path())
         pts_ = dict()
         for k in pts.keys():
             r, c = k.split('_')
@@ -120,7 +139,7 @@ class Regist(object):
             pts_[key] = np.array(pts[k][:], dtype=float)
         self._template, _ = \
             s.template(pts=pts_, scale_x= 1 / scale_x, scale_y= 1 / scale_y, rotate=rotate,
-                   chipno=self._stereo_chip_mode, index=index, output_path=self._output_path)
+                   chipno=self._stereo_chip_mode, index=index, output_path=self._output_dir)
         self._template = np.array(self._template)
         self._scale_x, self._scale_y, self._rotation = _
 
@@ -133,22 +152,25 @@ class Regist(object):
         else:
             gi = GeneInfo(gene_file=self._gene_matrix, chip_mode=None)
             gene_mat = gi.gene_mat
-            matrix_path = os.path.join(self._output_path, '{}_matrix.tif'.format(self._stereo_chip))
+            matrix_path = os.path.join(self._output_dir, '{}_matrix.tif'.format(self._stereo_chip))
             tifffile.imwrite(matrix_path, gene_mat, compression="zlib", compressionargs={"level": 8})
             glog.info('Save matrix bin-1 data to {}'.format(matrix_path))
 
-        fov_stitched = tifffile.imread(os.path.join(self._output_path, 'stitched.tif'))
+        fov_stitched = tifffile.imread(self._image_path)
         r = Registration()
         r.mass_registration_stitch(fov_stitched=fov_stitched, vision_image=gene_mat,
                                    chip_template=self._stereo_chip_mode, track_template=self._template,
                                    scale_x=1 / self._scale_x, scale_y=1 / self._scale_y, rotation=self._rotation, flip=True)
         r.transform_to_regist()
-        tifffile.imwrite(os.path.join(self._output_path, 'registration.tif'), r.regist_img)
+        tifffile.imwrite(self._output_path, r.regist_img)
+        shutil.rmtree(self._output_dir)
 
     def run(self, image: str, output: str, stereo_chip: str, gem=None):
         """ Module of Registration """
         self._image_path = image
         self._output_path = output
+        self._output_dir = os.path.join(os.path.dirname(output), 'tmp')
+        if not os.path.exists(self._output_dir): os.makedirs(self._output_dir)
         self._stereo_chip = stereo_chip
         self._gene_matrix = gem
         glog.info('Start RUN StereoCell registration')
@@ -189,7 +211,7 @@ def main(args, para):
 
 
 """
-python registration.py -i D:\data\test\paper\stitched.tif -g D:\data\test\SS200000135TL_D1.gem.gz -c SS200000135TL_D1 -o D:\data\test\paper2
+python registration.py -i D:\data\test\paper\stitched.tif -g D:\data\test\SS200000135TL_D1.gem.gz -c SS200000135TL_D1 -o D:\data\test\paper2\registered_image.tif
 """
 if __name__ == '__main__':
     usage="""Registration (StereoCell)"""

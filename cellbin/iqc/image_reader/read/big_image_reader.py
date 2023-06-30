@@ -36,10 +36,10 @@ class BigImageReader(FOVReader):
         except:
             image = cv.imdecode(np.fromfile(self.file_path, dtype=np.uint8), -1)
         original_shape = image.shape
-        if original_shape[0] > original_shape[-1]:
-            image = image[..., 0]
-        elif original_shape[0] < original_shape[-1]:
-            image = image[0, ...]
+        # if original_shape[0] > original_shape[-1]:
+        #     image = image[..., 0]
+        # elif original_shape[0] < original_shape[-1]:
+        #     image = image[0, ...]
         original_shape = image.shape
         cut_rate = 1 - self.overlap
         cut_size = [round(self.fov_height * cut_rate), round(self.fov_width * cut_rate)]

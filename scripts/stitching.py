@@ -34,7 +34,9 @@ def main(args, para):
     s = Stitcher()
     s.stitch(imap, output_path=args.output_file)
 
-
+"""
+python stitching.py -t D:\data\test\SS200000135TL_D1\SS200000135TL_D1 -o D:\data\test
+"""
 if __name__ == '__main__':
     usage="""Stitching (StereoCell)"""
     PROG_VERSION='v0.0.1'

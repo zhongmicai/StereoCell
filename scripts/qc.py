@@ -39,7 +39,7 @@ def main(args, para):
 
 
 """ Usage
-python .\qc.py --tiles_path D:\data\test\SS200000135TL_D1 --output_path D:\data\test\paper2 --chip_no SS200000135TL_D1
+python .\qc.py --tiles_path D:\data\test\SS200000135TL_D1 --chip_no SS200000135TL_D1
 """
 if __name__ == '__main__':
     usage=""" StereoCell """

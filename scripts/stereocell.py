@@ -158,7 +158,7 @@ class Pipeline(object):
     def _cell_cut(self, ):
         """ Get Cell Boundary Information in stain image """
         image_path = os.path.join(self._output_path, 'registered_image.tif')
-        cell_seg(image_path, self._output_path, flag=1)
+        cell_seg(image_path, os.path.join(self._output_path, 'nuclei_mask.tif'), flag=1)
 
     def _labeling(self, ):
         """ Expanding cell boundaries to capture greater numbers of genes within a single cell """
@@ -180,6 +180,12 @@ class Pipeline(object):
         # print(cmd)
         # os.system(cmd)
 
+    def _post(self, ):
+        for it in os.listdir(self._output_path):
+            if '.tif' in it: continue
+            if 'profile' in it: continue
+            os.remove(os.path.join(self._output_path, it))
+
     def run(self, image: str, output: str, stereo_chip: str, gem=None):
         """ Pipeline of StereoCell """
         self._image_path = image
@@ -199,6 +205,7 @@ class Pipeline(object):
             self._labeling()
         else:
             glog.warn('The track point detection failed and the follow-up process could not be completed')
+        self._post()
 
 
 """ Usage
@@ -230,6 +237,9 @@ def main(args, para):
     p.run(image=input, output=output, stereo_chip=chip_no, gem=gem_file)
 
 
+"""
+python stereocell.py -t D:\data\test\SS200000135TL_D1 -g D:\data\test\SS200000135TL_D1.gem.gz -c SS200000135TL_D1 -o D:\data\test\paper2
+"""
 if __name__ == '__main__':
     usage=""" StereoCell """
     PROG_VERSION='v0.0.1'

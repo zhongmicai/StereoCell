@@ -40,9 +40,10 @@ class CellSegPipe(object):
         self.img_list = self.__imload_list(img_path)
         self.__convert_gray()
         self.__out_path = out_path
-        if not exists(out_path):
-            os.mkdir(out_path)
-            glog.info('Create new dir : %s' % out_path)
+        output_dir = os.path.dirname(self.__out_path)
+        if not exists(output_dir):
+            os.mkdir(output_dir)
+            glog.info('Create new dir : %s' % output_dir)
         self.__is_water = is_water
         t0 = time.time()
         self.__trans16to8()
@@ -279,10 +280,8 @@ class CellSegPipe(object):
 
     def save_cell_mask(self):
         """save cell mask from network or watershed"""
-
-        for idx, file in enumerate(self.__file):
-            file_name, _ = os.path.splitext(file)
-            self.__save_each_file_result(file_name, idx)
+        if len(self.__file) == 1:
+            tifffile.imwrite(self.__out_path, self.post_mask_list[0], compression="zlib", compressionargs={"level": 8})
 
     def save_result(self):
         """save tissue mask"""
