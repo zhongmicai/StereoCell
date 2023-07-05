@@ -10,9 +10,9 @@
 <br>
 
 ## Installation
-* Download the StereoCell-dev package, and install requirements.txt in a ```python==3.8``` environment.
+* Download the [dev branch](https://codeload.github.com/STOmics/StereoCell/zip/refs/heads/dev) in StereoCell repo, and install requirements.txt in a ```python==3.8``` environment.
 ```text
-# python3.8
+# python3.8 in conda env
 conda create --name=StereoCell python=3.8
 conda activate StereoCell
 cd StereoCell-dev
