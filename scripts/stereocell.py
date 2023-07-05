@@ -104,7 +104,7 @@ class Pipeline(object):
         imap = image_map(tiles)
         # Stitching
         s = Stitcher()
-        s.stitch(imap, output_path=self._output_path)
+        s.stitch(imap, output_path=os.path.join(self._output_path, 'stitched_image.tif'))
 
         ipr = self._h5_path()
         h5 = h5py.File(ipr, 'r')
@@ -164,6 +164,7 @@ class Pipeline(object):
         """ Expanding cell boundaries to capture greater numbers of genes within a single cell """
         from cellbin.cell_labeling.GMMCorrectForv03 import CellCorrection
         from multiprocessing import cpu_count
+        import shutil
 
         mask_file = os.path.join(self._output_path, 'nuclei_mask.tif')
         gem_file = self._gene_matrix
@@ -172,6 +173,12 @@ class Pipeline(object):
         process = min(cpu_count() // 2, 3)
         cc = CellCorrection(mask_file, gem_file, out_path, threshold, process)
         cc.cell_correct()
+
+        bg_adjust_label = os.path.join(out_path, 'bg_adjust_label')
+        if os.path.exists(bg_adjust_label): shutil.rmtree(bg_adjust_label)
+        error_log = os.path.join(out_path, 'error_log.txt')
+        if os.path.exists(error_log): os.remove(error_log)
+
         # mask_file = os.path.join(self._output_path, 'tissue_mask.tif')
         # glog.info('Generate stereo-seq filter matrix')
         # cmd = '{} {} -g {} -t {} -o {}'.format(

@@ -19,4 +19,3 @@ tifffile==2022.10.10
 torch==2.0.0
 torchvision==0.15.1
 tqdm==4.64.1
-pyvips==2.2.1
