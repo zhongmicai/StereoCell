@@ -6,7 +6,7 @@ def main(args, para):
     a = tifffile.imread(args.tissue_mask)
     b = tifffile.imread(args.nuclei_mask)
     assert a.shape == b.shape
-    tifffile.imwrite(args.output, a * b, compression="zlib", compressionargs={"level": 8})
+    tifffile.imwrite(args.output_file, a * b, compression="zlib", compressionargs={"level": 8})
 
 
 if __name__ == '__main__':

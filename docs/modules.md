@@ -59,7 +59,7 @@ python segmentation.py
 python filtering.py
 --tissue_mask /result/tissue_mask.tif
 --nuclei_mask /result/nuclei_mask.tif
---output_file /result/cell_mask.tif
+--output_file /result/nuclei_mask.tif
 ```
 * ```--tissue_mask``` The tissue mask image. 
 * ```--nuclei_mask``` The nuclei mask image. 
