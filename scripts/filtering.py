@@ -3,8 +3,8 @@ import argparse
 
 def main(args, para):
     import tifffile
-    a = tifffile.imread(args.src)
-    b = tifffile.imread(args.dst)
+    a = tifffile.imread(args.tissue_mask)
+    b = tifffile.imread(args.nuclei_mask)
     assert a.shape == b.shape
     tifffile.imwrite(args.output, a * b, compression="zlib", compressionargs={"level": 8})
 
