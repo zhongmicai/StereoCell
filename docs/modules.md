@@ -57,12 +57,12 @@ python segmentation.py
 ## Nuclei mask filtering
 ```text
 python filtering.py
---image_file1 /result/nuclei_mask.tif
---image_file2 /result/tissue_mask.tif
---output_file /result/nuclei_mask.tif
+--tissue_mask /result/tissue_mask.tif
+--nuclei_mask /result/nuclei_mask.tif
+--output_file /result/cell_mask.tif
 ```
-* ```--image_file1``` The nuclei mask image. 
-* ```--image_file2``` The tissue mask image. 
+* ```--tissue_mask``` The tissue mask image. 
+* ```--nuclei_mask``` The nuclei mask image. 
 * ```--output_file``` The filtered nuclei mask image. 
 
 ## Molecule labeling

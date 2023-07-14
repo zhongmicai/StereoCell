@@ -52,7 +52,7 @@ class TissueCut(object):
 
         img = processing.f_tissue_preprocess(img, self._WIN_SIZE)
         pred = self._model.f_predict(copy.deepcopy(img))
-        pred = processing.f_post_process(pred)
+        pred = processing.f_tissue_postprocess(pred)
         pred = uity.f_resize(pred, src_shape)
         return img, pred
 
@@ -63,7 +63,7 @@ def tissue_cut(input: str, output: str, gpu: str=-1, num_threads: int=0):
         return
 
     img = tifffile.imread(input)
-    weights = os.path.join(os.path.split(os.path.abspath(__file__))[0], '../weights/stereocell_bcdu_tissue_512x512_220822.onnx')
+    weights = os.path.join(os.path.split(os.path.abspath(__file__))[0], r"../weights/stereocell_bcdu_tissue_512x512_220822.onnx")
     glog.info('Load weights from {}'.format(weights))
     sg = TissueCut(weights_file=weights, gpu=gpu, num_threads=int(num_threads))
     img, pred = sg.f_predict(img)
@@ -72,4 +72,9 @@ def tissue_cut(input: str, output: str, gpu: str=-1, num_threads: int=0):
     glog.info(f"Work Finished.")
 
 
+if __name__ == '__main__':
+    import sys
+
+    tissue_cut(r"D:\stock\dataset\test\1\registered_image.tif", r"D:\stock\dataset\test\1\out\mask_out.tif")
+    sys.exit()
 

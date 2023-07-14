@@ -29,11 +29,11 @@ def f_tissue_preprocess(img, tar_size=(256, 256)):
     img = tools.uity.f_resize(img, tar_size, "BILINEAR")
     img = tools.uity.f_ij_auto_contrast(img)
     img = img / 255.0
-    # img = img.astype('float32')
-    # sample_value = img[(0,) * img.ndim]
-    # if (img == sample_value).all():
-    #     return np.zeros_like(img)
-    # img = rescale_intensity(img, out_range=(0.0, 1.0))
+    #  img = img.astype('float32')
+    #  sample_value = img[(0,) * img.ndim]
+    #  if (img == sample_value).all():
+    #      return np.zeros_like(img)
+    #  img = rescale_intensity(img, out_range=(0.0, 1.0))
     return img
 
 
@@ -41,4 +41,5 @@ def f_tissue_postprocess(pred):
     pred = np.uint8(pred[0] * 255)
     pred = np.squeeze(pred)
     pred = f_th_li(pred)
+    # pred = np.uint8(pred)
     return pred

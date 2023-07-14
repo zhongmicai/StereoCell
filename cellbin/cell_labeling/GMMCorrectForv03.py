@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import argparse
 from tqdm import tqdm
+from multiprocessing import Pool
 from sklearn.mixture import GaussianMixture
 from multiprocessing import Process
 import gzip
@@ -63,7 +64,6 @@ def creat_cell_gxp(maskFile,geneFile,outpath='./', transposition=False, fileName
                   "x": np.uint32,
                   "y": np.uint32,
                   "values": np.uint32,
-                  "UMICount": np.uint32,
                   "MIDCount": np.uint32,
                   "MIDCounts": np.uint32}
 
@@ -80,9 +80,10 @@ def creat_cell_gxp(maskFile,geneFile,outpath='./', transposition=False, fileName
     print("Dumping results...")
     tissuedf['x'] = dst[1] + genedf['x'].min()
     tissuedf['y'] = dst[0] + genedf['y'].min()
-    tissuedf['label'] = maskImg[dst]
+    tissuedf['CellID'] = maskImg[dst]
 
     res = pd.merge(genedf, tissuedf, on=['x', 'y'], how='left').fillna(0) # keep background data
+    res['CellID'] = res['CellID'].astype(int)
     res.to_csv(os.path.join(outpath, fileName), sep='\t', index=False)
     return res
 
@@ -106,98 +107,88 @@ class CellCorrection(object):
         self.out_path = out_path
         self.threshold = threshold
         self.process = process
+        self.out = []
         self.radius = 50
 
     def __creat_gxp_data(self, ):
         """load the gene matrix into memory, returns single cell data."""
         data = creat_cell_gxp(self.mask_file, self. gem_file, outpath=self.out_path,
                               transposition=False, fileName='nuclei_mask_profile.txt')
-
-        if 'MIDCounts' in data.columns:
-            data = data.rename(columns={'MIDCounts': 'UMICount'})
-        if 'MIDCount' in data.columns:
-            data = data.rename(columns={'MIDCount': 'UMICount'})
-
-        assert 'UMICount' in data.columns
         assert 'x' in data.columns
         assert 'y' in data.columns
         assert 'geneID' in data.columns
 
-        cell_data = data[data.label != 0].copy()
-        cell_coor = cell_data.groupby('label').mean()[['x', 'y']].reset_index()
-
+        cell_data = data[data.CellID != 0].copy()
+        cell_coor = cell_data[['CellID', 'x', 'y']].groupby('CellID').mean().reset_index().astype(int)
+        
         return data, cell_data, cell_coor
 
+    def GMM_func(self, data, cell_coor, x, p_num):
+        """ Single cell online GMM learning """
+        t0 = time.time()
+        p_data = []
+        for idx, i in tqdm(enumerate(x)):
+            if (idx + 1) % 10 == 0:
+                t1 = time.time()
+                print("proc {}: {}/{} done, {:.2f}s.".format(p_num, idx, len(x), t1 - t0))
+            try:
+                clf = GaussianMixture(n_components=3, covariance_type='spherical')
+                # Gaussian Mixture Model GPU version
+                cell_test = data[
+                    (data.x < cell_coor.loc[i].x + self.radius) & (data.x > cell_coor.loc[i].x - self.radius) & (
+                            data.y > cell_coor.loc[i].y - self.radius) & (data.y < cell_coor.loc[i].y + self.radius)]
+                # fit GaussianMixture Model
+                clf.fit(cell_test[cell_test.CellID == cell_coor.loc[i].CellID][['x', 'y', 'MIDCount']].values)
+                cell_test_bg_ori = cell_test[cell_test.CellID == 0]
+                bg_group = cell_test_bg_ori.groupby(['x', 'y']).agg(MID_max=('MIDCount', 'max')).reset_index()
+                cell_test_bg = pd.merge(cell_test_bg_ori, bg_group, on=['x', 'y'])
+                # threshold 20
+                score = pd.Series(-clf.score_samples(cell_test_bg[['x', 'y', 'MID_max']].values))
+                cell_test_bg['score'] = score
+                threshold = self.threshold
+                cell_test_bg['CellID'] = np.where(score < threshold, cell_coor.loc[i].CellID, 0)
+                # used multiprocessing have to save result to file
+                p_data.append(cell_test_bg)
+            except Exception as e:
+                pass
+
+        out = pd.concat(p_data)
+        out.drop('MID_max', axis=1, inplace=True)
+        return out
+
     def _GMM_score(self, data, cell_coor):
-        radius = self.radius
-
-        def GMM_func(x, p_num):
-            """ Single cell online GMM learning """
-            t0 = time.time()
-            p_data = []
-            if not os.path.exists(os.path.join(self.out_path, 'bg_adjust_label')):
-                os.mkdir(os.path.join(self.out_path, 'bg_adjust_label'))
-            for idx, i in enumerate(x):
-                if (idx + 1) % 10 == 0:
-                    t1 = time.time()
-                    print("proc {}: {}/{} done, {:.2f}s.".format(p_num, idx, len(x), t1 - t0))
-                try:
-                    clf = GaussianMixture(n_components=3, covariance_type='spherical')
-                    # Gaussian Mixture Model GPU version
-                    cell_test = data[(data.x < cell_coor.loc[i].x + radius) & (data.x > cell_coor.loc[i].x - radius) & (
-                                data.y > cell_coor.loc[i].y - radius) & (data.y < cell_coor.loc[i].y + radius)]
-                    # fit GaussianMixture Model
-                    clf.fit(cell_test[cell_test.label == cell_coor.loc[i].label][['x', 'y', 'UMICount']].values)
-                    cell_test_bg_ori = cell_test[cell_test.label == 0]
-                    bg_group = cell_test_bg_ori.groupby(['x', 'y']).agg(UMI_max=('UMICount', 'max')).reset_index()
-                    cell_test_bg = pd.merge(cell_test_bg_ori, bg_group, on=['x', 'y'])		
-                    # threshold 20
-                    score = pd.Series(-clf.score_samples(cell_test_bg[['x', 'y', 'UMI_max']].values))
-                    cell_test_bg['score'] = score
-                    threshold = self.threshold
-                    cell_test_bg['label'] = np.where(score < threshold, cell_coor.loc[i].label, 0)
-                     # used multiprocessing have to save result to file
-                    p_data.append(cell_test_bg)
-                except Exception as e:
-                    print(e)
-                    with open(os.path.join(self.out_path, 'error_log.txt'), 'a+') as f:
-                        f.write('Cell ID: {}\n'.format(cell_coor.loc[i].label))
-
-            out = pd.concat(p_data)
-            out.drop('UMI_max', axis=1, inplace=True)
-            out.to_csv(os.path.join(self.out_path, 'bg_adjust_label', '{}.txt'.format(p_num)), sep='\t', index=False)
-
+        pool = Pool(self.process)
         processes = []
         qs = math.ceil(len(cell_coor.index) / int(self.process))
         for i in tqdm(range(self.process)):
-
             idx = np.arange(i * qs, min((i + 1) * qs, len(cell_coor.index)))
             if len(idx) == 0: continue
-            p = Process(target=GMM_func, args=(idx, i))
-            p.start()
+            p = pool.apply_async(self.GMM_func, args=(data, cell_coor, idx, i))
             processes.append(p)
-
-        [pi.join() for pi in processes]
-
-        return None
+        pool.close()
+        pool.join()
+        for p in processes:
+            try:
+                self.out.append(p.get())
+            except:
+                print('Empty data from pool!')
 
     def _GMM_correction(self, cell_data):
 
         bg_data = []
-        error = []
-
-        file_list = os.listdir(os.path.join(self.out_path, 'bg_adjust_label'))
-        for i in tqdm(file_list):
-            try:
-                tmp = pd.read_csv(os.path.join(self.out_path, 'bg_adjust_label', i), sep='\t')
-                bg_data.append(tmp[tmp.label != 0])
-            except:
-                error.append(i)
-        adjust_data = pd.concat(bg_data).sort_values('score')
-        adjust_data = adjust_data.drop_duplicates(subset=['geneID', 'x', 'y', 'UMICount'], keep='first').rename(columns={'score':'tag'})
-        adjust_data['tag'] = '1'   #adjust
-        cell_data['tag'] = '0'  #raw
+        for i in tqdm(self.out):
+            bg_data.append(i[i.CellID != 0])
+        if len(bg_data) > 0:
+            adjust_data = pd.concat(bg_data).sort_values('score')
+        else:
+            print('no background data! ***GMM Failed***')
+            return
+        adjust_data = adjust_data.drop_duplicates(subset=['geneID', 'x', 'y', 'MIDCount'], keep='first').rename(
+            columns={'score': 'tag'})
+        adjust_data['tag'] = '1'
+        cell_data['tag'] = '0'
         correct_data = pd.concat([adjust_data, cell_data])
+        correct_data.drop('tag', axis=1, inplace=True)
         correct_data.to_csv(os.path.join(self.out_path, 'cell_mask_profile.txt'), sep='\t', index=False)
 
     def cell_correct(self, ):
@@ -221,8 +212,8 @@ class CellCorrection(object):
 def args_parse():
     usage = """ Usage: %s Cell expression file (with background) path, multi-process """
     arg = argparse.ArgumentParser(usage=usage)
-    arg.add_argument('-m', '--mask_path', help='cell mask')
-    arg.add_argument('-g', '--gem_path', help='gem file')
+    arg.add_argument('-m', '--mask_path', help='cell mask', default=r"/ldfssz1/ST_BI/USER/wuyiwen/others/test_gmm/B02304A2_18607_11185_mask.tif")
+    arg.add_argument('-g', '--gem_path', help='gem file', default=r"/ldfssz1/ST_BI/USER/wuyiwen/others/test_gmm/B02304A2_18607_11185.gem")
     arg.add_argument('-o', '--out_path', help='output path', default='./')
     arg.add_argument('-p', '--process', help='n process', type=int, default=10)
     arg.add_argument('-t', '--threshold', help='threshold', type=int, default=20)

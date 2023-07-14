@@ -15,9 +15,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument("--version", action="version", version=PROG_VERSION)
-    parser.add_argument("-s", "--src", action="store", dest="src", type=str, required=True, help="Input mask1.")
-    parser.add_argument("-d", "--dst", action="store", dest="dst", type=str, required=True, help="Input mask2.")
-    parser.add_argument("-o", "--output", action="store", dest="output", type=str, required=True,
+    parser.add_argument("-t", "--tissue_mask", action="store", dest="tissue_mask", type=str, required=True, help="Input tissue mask.")
+    parser.add_argument("-n", "--nuclei_mask", action="store", dest="nuclei_mask", type=str, required=True, help="Input nuclei mask.")
+    parser.add_argument("-o", "--output_file", action="store", dest="output_file", type=str, required=True,
                         help="Result output file.")
     parser.set_defaults(func=main)
     (para, args) = parser.parse_known_args()
