@@ -189,6 +189,9 @@ class Pipeline(object):
 
     def _post(self, ):
         for it in os.listdir(self._output_path):
+            if '_matrix.tif' in it:
+                os.remove(os.path.join(self._output_path, it))
+                continue
             if '.tif' in it: continue
             if 'profile' in it: continue
             os.remove(os.path.join(self._output_path, it))
