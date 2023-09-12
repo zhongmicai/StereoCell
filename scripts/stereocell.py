@@ -219,11 +219,7 @@ class Pipeline(object):
 
 
 """ Usage
-python .\pstereocell.py \
---input D:\data\test\SS200000135TL_D1 \
---output D:\data\test\paper \
---matrix D:\data\test\SS200000135TL_D1.gem.gz \
---chipno SS200000135TL_D1
+python .\stereocell.py --tiles_path D:\data\test\SS200000135TL_D1 --output D:\data\test\paper --gene_exp_data D:\data\test\SS200000135TL_D1.gem.gz --chip_no SS200000135TL_D1
 """
 
 

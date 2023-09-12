@@ -4,7 +4,7 @@ Created on Fri Jul 14 17:51:48 2023
 
 @author: wuyiwen
 """
-
+import tifffile
 import tifffile as tifi
 import cv2
 import argparse
@@ -43,6 +43,7 @@ def row(gem_path):
 def creat_cell_gxp(mask_path, gem_path, outpath='./', fileName='cellbin_gmm.txt'):
     print("Loading mask file...")
     mask = tifi.imread(mask_path)
+    mask[np.where(mask > 1)] = 1
     num_labels, maskImg, _, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
     print("Reading data..")
     gem = pd.read_csv(gem_path, sep='\t', skiprows=row(gem_path))

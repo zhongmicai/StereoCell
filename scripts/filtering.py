@@ -1,12 +1,16 @@
 import argparse
 
+import numpy as np
+
 
 def main(args, para):
     import tifffile
     a = tifffile.imread(args.tissue_mask)
+    a[np.where(a > 1)] = 1
     b = tifffile.imread(args.nuclei_mask)
+    b[np.where(b > 1)] = 1
     assert a.shape == b.shape
-    tifffile.imwrite(args.output_file, a * b, compression="zlib", compressionargs={"level": 8})
+    tifffile.imwrite(args.output_file, a * b * 255, compression="zlib", compressionargs={"level": 8})
 
 
 if __name__ == '__main__':

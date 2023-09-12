@@ -243,6 +243,7 @@ class CellSegPipe(object):
         for idx, cell_mask in enumerate(cell_masks):
             cell_mask = np.squeeze(np.asarray(cell_mask))
             post_mask = grade.edgeSmooth(cell_mask)
+            if np.max(post_mask) == 1: post_mask = post_mask * 255
             self.post_mask_list.append(post_mask)
 
     def save_tissue_mask(self):
@@ -281,6 +282,7 @@ class CellSegPipe(object):
     def save_cell_mask(self):
         """save cell mask from network or watershed"""
         if len(self.__file) == 1:
+            if np.max(self.post_mask_list[0]) == 1: self.post_mask_list[0] *= 255
             tifffile.imwrite(self.__out_path, self.post_mask_list[0], compression="zlib", compressionargs={"level": 8})
 
     def save_result(self):
