@@ -176,27 +176,31 @@ class ImageTransform(pyvips.Image):
         刚性
         """
         if flip is not None:
-            if flip == 'ver':
-                self.image = self.image.flipver()
-            elif flip == 'hor':
-                self.image = self.image.fliphor()
+            if flip == 'ver': self.image = self.image.flipver()
+            elif flip == 'hor': self.image = self.image.fliphor()
 
         if rot_type is not None:
-            theta = np.radians(-rot_type * 90)
-            m = [np.cos(theta), -np.sin(theta), np.sin(theta), np.cos(theta)]
-            self.image = self.image.affine(m, interpolate=pyvips.Interpolate.new("nearest"),
-                                           background=[0])
-
-        if offset is not None:
+            # theta = np.radians(-rot_type * 90)
+            # m = [np.cos(theta), -np.sin(theta), np.sin(theta), np.cos(theta)]
+            # self.image = self.image.affine(m, interpolate=pyvips.Interpolate.new("nearest"),
+            #                                background=[0])
+            if rot_type == 1:
+                self.image = self.image.rot270()
+            elif rot_type == 2:
+                self.image = self.image.rot180()
+            elif rot_type == 3:
+                self.image = self.image.rot90()
+            # if dst_shape is not None:
+            #     h, w = dst_shape
+            #     self.image = self.image.affine([1, 0, 0, 1],
+            #                                    interpolate=pyvips.Interpolate.new("nearest"),
+            #                                    oarea=[0, 0, w, h])
+        if offset is not None and dst_shape is not None:
             x, y = offset
-            self.image = self.image.affine([1, 0, 0, 1],
-                                           interpolate=pyvips.Interpolate.new("nearest"),
-                                           idx=x, idy=y)
-        if dst_shape is not None:
             h, w = dst_shape
             self.image = self.image.affine([1, 0, 0, 1],
                                            interpolate=pyvips.Interpolate.new("nearest"),
-                                           oarea=[0, 0, w, h])
+                                           idx=x, idy=y, oarea=[0, 0, w, h])
 
     def __affine_transform(self, scale_x=None, scale_y=None, rotation=None):
         """ Affine transform """
